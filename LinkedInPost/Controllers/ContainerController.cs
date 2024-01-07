@@ -41,7 +41,7 @@ namespace LinkedInPost.Controllers
             return await blobContainerClient.DeleteIfExistsAsync();
         }
 
-        [HttpPost("{UploadBlob}")]
+        [HttpPost("UploadBlob")]
         public async Task<ActionResult<string>> UploadBlob([FromForm] BlobDto blobDto)
         {
             if (blobDto.UploadFile == null || blobDto.UploadFile.Length < 1)
@@ -61,12 +61,13 @@ namespace LinkedInPost.Controllers
                 ContentType = blobDto.UploadFile.ContentType
             };
 
-            var blobMetadata = new Dictionary<string, string>
+            var blobMetadata = new Dictionary<string, string>()
             {
-                { "createdBy", blobDto.UploadedBy },
-                { "createdDate", blobDto.UploadedDate }
+                {"uploadedBy", blobDto.UploadedBy }
             };
-
+            if (!string.IsNullOrEmpty(blobDto.Notes))            
+                blobMetadata.Add("notes", blobDto.Notes);                            
+            
             var result = await blobClient.UploadAsync(blobDto.UploadFile.OpenReadStream(), blobHeaders, blobMetadata);
 
             if (result != null)

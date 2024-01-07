@@ -9,7 +9,8 @@ namespace LinkedInPost.Dtos
         public string ContainerName { get; set; }
         [VaildExtension(".png")]
         public IFormFile? UploadFile { get; set; }
+        [Required]
         public string UploadedBy { get; set; }
-        public string UploadedDate { get; set; }
+        public string? Notes { get; set; }
     }
 }

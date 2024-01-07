@@ -10,7 +10,6 @@ namespace LinkedInPost.Controllers
     public class BlobController : ControllerBase
     {
         private readonly BlobServiceClient _blobServiceClient;
-
         public BlobController(BlobServiceClient blobServiceClient)
         {
             _blobServiceClient = blobServiceClient;
@@ -33,7 +32,7 @@ namespace LinkedInPost.Controllers
         }
 
         [HttpGet("GetBlobUrl/{containerName}/{blobName}")]
-        public async Task<ActionResult<string>> GetBlobUrl(string containerName, string blobName)
+        public ActionResult<string> GetBlobUrl(string containerName, string blobName)
         {
             if (!string.IsNullOrEmpty(containerName) && !string.IsNullOrEmpty(blobName))
             {

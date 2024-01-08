@@ -17,14 +17,20 @@ namespace LinkedInPost.Controllers
         }
 
         [HttpGet]
-        public async Task<List<BlobContainerItem>> GetAll()
+        public async Task<List<BlobContainerResponseDto>> GetAll()
         {
-            var containerItems = new List<BlobContainerItem>();
+            var responseDtos = new List<BlobContainerResponseDto>();
             await foreach (var blobContainerItem in _blobServiceClient.GetBlobContainersAsync())
             {
-                containerItems.Add(blobContainerItem);
+                var responseDto = new BlobContainerResponseDto()
+                {
+                    Name = blobContainerItem.Name,
+                    VersionId = blobContainerItem.VersionId,
+                    PublicAccess = blobContainerItem.Properties.PublicAccess?.ToString() ?? string.Empty
+                };
+                responseDtos.Add(responseDto);
             }
-            return containerItems;
+            return responseDtos;
         }
 
         [HttpPost]

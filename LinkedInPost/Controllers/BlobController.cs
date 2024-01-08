@@ -1,5 +1,4 @@
 ﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using LinkedInPost.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,21 +14,32 @@ namespace LinkedInPost.Controllers
             _blobServiceClient = blobServiceClient;
         }
 
-        [HttpGet("GetBlobs/{containerName}")]
-        public async Task<ActionResult<List<BlobItem>>> GetBlobs(string containerName)
-        {
-            if (!string.IsNullOrEmpty(containerName))
+            [HttpGet("GetBlobs/{containerName}")]
+            public async Task<ActionResult<List<BlobResponseDto>>> GetBlobs(string containerName)
             {
-                var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-                var blobItems = new List<BlobItem>();
-                await foreach (var blobItem in blobContainerClient.GetBlobsAsync())
+                if (!string.IsNullOrEmpty(containerName))
                 {
-                    blobItems.Add(blobItem);
+                    var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+                    var responseDtos = new List<BlobResponseDto>();
+                    await foreach (var blobItem in blobContainerClient.GetBlobsAsync())
+                    {
+                        var responseDto = new BlobResponseDto()
+                        {
+                            Name = blobItem.Name,
+                            VersionId = blobItem.VersionId,
+                            Properties = new Properties()
+                            {
+                                CreatedOn = blobItem.Properties.CreatedOn,
+                                LastModified = blobItem.Properties.LastModified,
+                                ContentType = blobItem.Properties.ContentType                                                                            
+                            }
+                        };
+                        responseDtos.Add(responseDto);
+                    }
+                    return Ok(responseDtos);
                 }
-                return Ok(blobItems);
+                return BadRequest();
             }
-            return BadRequest();
-        }
 
         [HttpGet("GetBlobUrl/{containerName}/{blobName}")]
         public ActionResult<string> GetBlobUrl(string containerName, string blobName)

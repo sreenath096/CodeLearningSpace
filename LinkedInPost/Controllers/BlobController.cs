@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using AutoMapper;
+using Azure.Storage.Blobs;
 using LinkedInPost.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,37 +10,30 @@ namespace LinkedInPost.Controllers
     public class BlobController : ControllerBase
     {
         private readonly BlobServiceClient _blobServiceClient;
-        public BlobController(BlobServiceClient blobServiceClient)
+        private readonly IMapper _mapper;
+
+        public BlobController(BlobServiceClient blobServiceClient
+            , IMapper mapper)
         {
             _blobServiceClient = blobServiceClient;
+            _mapper = mapper;
         }
 
-            [HttpGet("GetBlobs/{containerName}")]
-            public async Task<ActionResult<List<BlobResponseDto>>> GetBlobs(string containerName)
+        [HttpGet("GetBlobs/{containerName}")]
+        public async Task<ActionResult<List<BlobResponseDto>>> GetBlobs(string containerName)
+        {
+            if (!string.IsNullOrEmpty(containerName))
             {
-                if (!string.IsNullOrEmpty(containerName))
-                {
-                    var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-                    var responseDtos = new List<BlobResponseDto>();
-                    await foreach (var blobItem in blobContainerClient.GetBlobsAsync())
-                    {
-                        var responseDto = new BlobResponseDto()
-                        {
-                            Name = blobItem.Name,
-                            VersionId = blobItem.VersionId,
-                            Properties = new Properties()
-                            {
-                                CreatedOn = blobItem.Properties.CreatedOn,
-                                LastModified = blobItem.Properties.LastModified,
-                                ContentType = blobItem.Properties.ContentType                                                                            
-                            }
-                        };
-                        responseDtos.Add(responseDto);
-                    }
-                    return Ok(responseDtos);
+                var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+                var responseDtos = new List<BlobResponseDto>();
+                await foreach (var blobItem in blobContainerClient.GetBlobsAsync())
+                {                                        
+                    responseDtos.Add(_mapper.Map<BlobResponseDto>(blobItem));
                 }
-                return BadRequest();
+                return Ok(responseDtos);
             }
+            return BadRequest();
+        }
 
         [HttpGet("GetBlobUrl/{containerName}/{blobName}")]
         public ActionResult<string> GetBlobUrl(string containerName, string blobName)

@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using AutoMapper;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using LinkedInPost.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,13 @@ namespace LinkedInPost.Controllers
     public class ContainerController : ControllerBase
     {
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly IMapper _mapper;
 
-        public ContainerController(BlobServiceClient blobServiceClient)
+        public ContainerController(BlobServiceClient blobServiceClient
+            , IMapper mapper)
         {
             _blobServiceClient = blobServiceClient;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -21,14 +25,8 @@ namespace LinkedInPost.Controllers
         {
             var responseDtos = new List<BlobContainerResponseDto>();
             await foreach (var blobContainerItem in _blobServiceClient.GetBlobContainersAsync())
-            {
-                var responseDto = new BlobContainerResponseDto()
-                {
-                    Name = blobContainerItem.Name,
-                    VersionId = blobContainerItem.VersionId,
-                    PublicAccess = blobContainerItem.Properties.PublicAccess?.ToString() ?? string.Empty
-                };
-                responseDtos.Add(responseDto);
+            {                
+                responseDtos.Add(_mapper.Map<BlobContainerResponseDto>(blobContainerItem));
             }
             return responseDtos;
         }

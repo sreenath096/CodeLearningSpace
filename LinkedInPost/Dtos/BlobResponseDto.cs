@@ -3,8 +3,9 @@
     public class BlobResponseDto
     {
         public string Name { get; set; }                
-        public string VersionId { get; set; }        
-        public Properties Properties { get; set; }        
+        public string VersionId { get; set; }       
+        public Properties Properties { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
     }
     public class Properties
     {

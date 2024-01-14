@@ -24,7 +24,7 @@ namespace LinkedInPost.Controllers
         public async Task<List<BlobContainerResponseDto>> GetAll()
         {
             var responseDtos = new List<BlobContainerResponseDto>();
-            await foreach (var blobContainerItem in _blobServiceClient.GetBlobContainersAsync())
+            await foreach (var blobContainerItem in _blobServiceClient.GetBlobContainersAsync(BlobContainerTraits.Metadata))
             {                
                 responseDtos.Add(_mapper.Map<BlobContainerResponseDto>(blobContainerItem));
             }
@@ -32,10 +32,17 @@ namespace LinkedInPost.Controllers
         }
 
         [HttpPost]
-        public async Task<BlobContainerInfo> Create([FromBody] string containerName)
+        public async Task<BlobContainerInfo> Create([FromBody] ContainerRequestDto containerRequestDto)
         {
-            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-            return await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.BlobContainer);
+            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerRequestDto.ContainerName);            
+            var blobContainerMetadata = new Dictionary<string, string>()
+            {
+                {"uploadedBy", containerRequestDto.UploadedBy }
+            };
+            if (!string.IsNullOrEmpty(containerRequestDto.Notes))
+                blobContainerMetadata.Add("notes", containerRequestDto.Notes);
+
+            return await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.BlobContainer, blobContainerMetadata);
         }
 
         [HttpDelete]

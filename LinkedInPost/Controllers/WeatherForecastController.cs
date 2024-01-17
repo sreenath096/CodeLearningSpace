@@ -14,17 +14,21 @@ namespace LinkedInPost.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get([FromServices] IConfiguration configuration)
         {
-            // indexer
-            int weatherForecastMinRange = Convert.ToInt32(configuration["weatherForecastMinRange"]);
-            int weatherForecastMaxRange = Convert.ToInt32(configuration["weatherForecastMaxRange"]);
+            // using indexer
+            int weatherForecastMinRange = Convert.ToInt32(configuration["WeatherForecast:MinRange"]);
+            int weatherForecastMaxRange = Convert.ToInt32(configuration["WeatherForecast:MaxRange"]);
 
-            // using GetValue method without passing default value
-            weatherForecastMinRange = configuration.GetValue<int>("weatherForecastMinRange");
-            weatherForecastMaxRange = configuration.GetValue<int>("weatherForecastMaxRange");
+            // using GetSection method
+            weatherForecastMinRange = Convert.ToInt32(configuration.GetSection("WeatherForecast:MinRange").Value);
+            weatherForecastMaxRange = Convert.ToInt32(configuration.GetSection("WeatherForecast:MaxRange").Value);
 
-            // using GetValue method by passing default value
-            weatherForecastMinRange = configuration.GetValue<int>("weatherForecastMinRange", 1);
-            weatherForecastMaxRange = configuration.GetValue<int>("weatherForecastMaxRange", 5);
+            // using GetSection and GetValue method without passing default value
+            weatherForecastMinRange = configuration.GetSection("WeatherForecast").GetValue<int>("MinRange");
+            weatherForecastMaxRange = configuration.GetSection("WeatherForecast").GetValue<int>("MaxRange");
+
+            // using GetSection and GetValue method passing default value
+            weatherForecastMinRange = configuration.GetSection("WeatherForecast").GetValue<int>("MinRange", 1);
+            weatherForecastMaxRange = configuration.GetSection("WeatherForecast").GetValue<int>("MaxRange", 2);
 
             return Enumerable.Range(weatherForecastMinRange, weatherForecastMaxRange)
                 .Select(index => new WeatherForecast
